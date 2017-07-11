@@ -1,3 +1,3 @@
 # Utility
 
-My utility scripts that applys to many of you hopefully.
+My utility scripts that may apply to many of you hopefully.
