@@ -1,0 +1,64 @@
+#!/bin/sh
+
+set -e
+
+echo "TODO: use pypy to carry angr"
+
+showhelp(){
+        echo "Usage:" 1>&2
+        echo "    $0 [OPTION] [CONTAINER_NAME] [USER]" 1>&2
+        echo "    Options:" 1>&2
+        echo "        spawn" 1>&2
+        echo "        sh(ell)" 1>&2
+        echo "        revive" 1>&2
+        echo "        stop" 1>&2
+        echo "        purge" 1>&2
+        echo "        update" 1>&2
+}
+
+if [ -z $2 ]
+then
+    NAME=angrd
+else
+    NAME=$2
+fi
+
+if [ $3 -a $3 = root ]
+then
+    USER=root
+else
+    USER=angr
+fi
+
+PWDPATH=$(pwd)
+CDPATH=${PWDPATH#~}
+
+echo 'Container name:' ${NAME}
+echo 'User:' ${USER}
+
+case $1 in
+    sh|shell|'')
+        exec docker exec -it -u ${USER} ${NAME} /bin/bash -c "cd ~/'${CDPATH}'; exec bash"
+        ;;
+    spawn)
+        exec docker run -di --name ${NAME} --volume ~/Documents:/home/angr/Documents --volume ~/Source:/home/angr/Source angr/angr
+        ;;
+    revive)
+        exec docker start ${NAME}
+        ;;
+    stop)
+        exec docker stop ${NAME}
+        ;;
+    purge)
+        exec docker rm -f ${NAME}
+        ;;
+    update)
+        echo 'Checking angr docker version'
+        exec docker pull angr/angr
+        ;;
+    *)
+        # unknown option
+        echo "Unrecognized option:" $1
+        showhelp
+    ;;
+esac
